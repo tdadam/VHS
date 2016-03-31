@@ -25,7 +25,7 @@ app.get('/api/movies', (req, res) => {
 	res.json(movies).end();
 });
 
-var port = 3343;
+var port = 443;
 app.listen(port, function() {
 	console.log(`App listening on port ${port}...`);
 });
