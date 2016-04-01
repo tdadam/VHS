@@ -1,19 +1,14 @@
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
+var fs = require('fs');
+var movies = [];
 
-var movies = [
-	{
-		title: 'Movie Title 1',
-		year: 1988,
-		checkedOut: true
-	},
-	{
-		title: 'Movie Title 2',
-		year: 1989,
-		checkedOut: false
-	}
-];
+function writeFile(){
+	fs.writeFile('movies.json', JSON.stringify(movies), (err) => {
+		if (err) throw err;
+	});
+}
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -21,8 +16,33 @@ app.use(bodyParser.json());
 app.use('/', express.static(__dirname + '/client'));
 app.use('/node_modules', express.static(__dirname + '/node_modules'));
 
+fs.readFile('movies.json', 'utf8', (err, data) => {
+	movies = JSON.parse(data);
+});
+
 app.get('/api/movies', (req, res) => {
-	res.json(movies).end();
+	res.send(movies).end();
+});
+
+app.post('/api/savemovie', (req, res) => {
+	movies.push(req.body);
+	writeFile();
+	res.send(movies).end();
+});
+
+app.delete('/api/removemovie', function(req, res) {
+	console.log(req.query);
+	for (var i = 0; i < movies.length; i++){
+		if (req.query.title === movies[i].title){
+			movies.splice(i, 1);
+		}
+	}
+	writeFile();
+	res.send(movies).end();
+});
+
+app.get('/api/searchmovie/:title', (req, res) => {
+	console.log('searching', req.params);
 });
 
 var port = process.env.PORT || 5000;

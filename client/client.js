@@ -10,25 +10,33 @@ angular.module('app', ['ngMaterial'])
 function MainCtrl($http) {
 	this.$http = $http;
 	this.greeting = 'VHS Store';
-	this.movies = [
-		{
-			title: 'Movie Title 1',
-			year: 1988,
-			checkedOut: false
-		}
-	];
+	this.movies = [];
+	this.searchText = '';
 }
 
 MainCtrl.prototype.sayHi = function() {
 	console.log(this.greeting);
 };
 
+/**
+ * Used for both checking out a movie and checking in.
+ * The server will need to check the "checkedOut" property of the movie.
+ */
 MainCtrl.prototype.checkOut = function(movie) {
 	console.log('checkout', movie);
+	this.$http.post('/api/checkout', movie).then(response => {
+		console.log('checked out movie');
+		this.search(this.searchText);
+	}).catch(error => {
+		console.log('movie already checked out');
+		this.search(this.searchText);
+	});
 };
 
 MainCtrl.prototype.removeMovie = function(movie) {
-	console.log('remove', movie);
+	this.$http.delete('/api/removemovie?title=' + movie.title).then(response => {
+		this.movies = response.data;
+	});
 };
 
 MainCtrl.prototype.search = function(text) {
@@ -40,9 +48,21 @@ MainCtrl.prototype.search = function(text) {
 		});
 	} else {
 		console.log('search for movies:', text);
+		this.$http.get(`/api/searchmovie/${text}`).then(response => {
+			this.movies = response.data;
+		});
 	}
 };
 
 MainCtrl.prototype.saveMovie = function(title, year) {
 	console.log('save movie', title, year);
+
+	this.$http.post('/api/savemovie', {
+		title: title,
+		year: year,
+		checkedOut: false
+	}).then(response => {
+		console.log('saved movie', response);
+		this.search('');
+	});
 };
