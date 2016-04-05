@@ -10,7 +10,10 @@ angular.module('app', ['ngMaterial'])
 function MainCtrl($http) {
 	this.$http = $http;
 	this.greeting = 'VHS Store';
-	this.movies = [];
+	this.$http.get('/api/movies').then(response => {
+		console.log('api movies', response.data);
+		this.movies = response.data;
+	});
 	this.searchText = '';
 }
 
